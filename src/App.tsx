@@ -1,24 +1,64 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { useEffect, useRef } from 'react';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import Lenis from 'lenis';
+import Hero from './components/Hero';
+import About from './components/About';
+import Skills from './components/Skills';
+import Experience from './components/Experience';
+import Projects from './components/Projects';
+import Contact from './components/Contact';
+import Navbar from './components/Navbar';
+import Cursor from './components/Cursor';
 import './App.css';
 
+gsap.registerPlugin(ScrollTrigger);
+
 function App() {
+  const appRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Initialize Lenis smooth scrolling
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    });
+
+    // RAF loop for smooth scrolling
+    function raf(time: number) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf);
+
+    // Initialize GSAP animations
+    const ctx = gsap.context(() => {
+      // Performance optimizations
+      gsap.ticker.lagSmoothing(1000, 16);
+      
+      // Refresh ScrollTrigger when everything is loaded
+      ScrollTrigger.refresh();
+      
+    }, appRef);
+
+    return () => {
+      lenis.destroy();
+      ctx.revert();
+    };
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div ref={appRef} className="App relative">
+      <Cursor />
+      <Navbar />
+      <main className="relative">
+        <Hero />
+        <About />
+        <Skills />
+        <Experience />
+        <Projects />
+        <Contact />
+      </main>
     </div>
   );
 }
